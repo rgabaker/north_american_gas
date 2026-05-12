@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from backend.optimization_module import SAMPLE_DATA, optimize_gas_distribution
+from backend.optimization_module import load_default_input_data, optimize_gas_distribution
 
 
 class OptimizeRequest(BaseModel):
@@ -32,9 +32,17 @@ def index() -> FileResponse:
     return FileResponse(static_dir / "index.html")
 
 
+@app.get("/api/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.get("/api/sample-data")
 def sample_data() -> dict:
-    return SAMPLE_DATA
+    try:
+        return load_default_input_data()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail="Missing data/input_data.json") from exc
 
 
 @app.post("/api/optimize")

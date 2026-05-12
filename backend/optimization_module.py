@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 
@@ -10,7 +12,6 @@ class RegionInput:
     demand: float
     supply_capacity: float
     transport_cost: float
-
 
 
 def _validate_payload(payload: dict[str, Any]) -> list[RegionInput]:
@@ -45,15 +46,8 @@ def _validate_payload(payload: dict[str, Any]) -> list[RegionInput]:
     return parsed
 
 
-
 def optimize_gas_distribution(payload: dict[str, Any]) -> dict[str, Any]:
-    """Simple cost-minimizing allocator.
-
-    The allocator greedily fills regional demand from lowest transport cost
-    regions first, subject to each region's supply capacity.
-    """
     regions = _validate_payload(payload)
-
     total_demand = sum(r.demand for r in regions)
     total_capacity = sum(r.supply_capacity for r in regions)
 
@@ -79,27 +73,20 @@ def optimize_gas_distribution(payload: dict[str, Any]) -> dict[str, Any]:
     total_shipped = sum(a["allocation"] for a in allocations)
     weighted_cost = sum(a["allocation"] * a["transport_cost"] for a in allocations)
 
-    summary = {
-        "total_demand": round(total_demand, 2),
-        "total_capacity": round(total_capacity, 2),
-        "total_shipped": round(total_shipped, 2),
-        "unmet_demand": round(max(total_demand - total_shipped, 0), 2),
-        "average_transport_cost": round(weighted_cost / total_shipped, 4) if total_shipped else 0,
-        "total_transport_cost": round(weighted_cost, 2),
-    }
-
     return {
-        "summary": summary,
+        "summary": {
+            "total_demand": round(total_demand, 2),
+            "total_capacity": round(total_capacity, 2),
+            "total_shipped": round(total_shipped, 2),
+            "unmet_demand": round(max(total_demand - total_shipped, 0), 2),
+            "average_transport_cost": round(weighted_cost / total_shipped, 4) if total_shipped else 0,
+            "total_transport_cost": round(weighted_cost, 2),
+        },
         "allocations": allocations,
     }
 
 
-SAMPLE_DATA = {
-    "regions": [
-        {"region": "Alberta", "demand": 160, "supply_capacity": 180, "transport_cost": 1.8},
-        {"region": "British Columbia", "demand": 95, "supply_capacity": 110, "transport_cost": 2.3},
-        {"region": "Midwest", "demand": 210, "supply_capacity": 190, "transport_cost": 1.5},
-        {"region": "Northeast", "demand": 170, "supply_capacity": 120, "transport_cost": 2.9},
-        {"region": "Gulf Coast", "demand": 140, "supply_capacity": 220, "transport_cost": 1.2},
-    ]
-}
+def load_default_input_data() -> dict[str, Any]:
+    input_path = Path(__file__).resolve().parent.parent / "data" / "input_data.json"
+    with input_path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
