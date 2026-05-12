@@ -1,0 +1,9 @@
+{
+  "regions": [
+    {"region": "Alberta", "demand": 160, "supply_capacity": 180, "transport_cost": 1.8},
+    {"region": "British Columbia", "demand": 95, "supply_capacity": 110, "transport_cost": 2.3},
+    {"region": "Midwest", "demand": 210, "supply_capacity": 190, "transport_cost": 1.5},
+    {"region": "Northeast", "demand": 170, "supply_capacity": 120, "transport_cost": 2.9},
+    {"region": "Gulf Coast", "demand": 140, "supply_capacity": 220, "transport_cost": 1.2}
+  ]
+}
